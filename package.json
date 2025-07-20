@@ -11,5 +11,8 @@
   "scripts": {
     "dev": "bun --watch index.ts"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "fastify": "^5.4.0"
+  }
 }
