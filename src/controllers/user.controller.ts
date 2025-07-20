@@ -1,12 +1,15 @@
-import type { FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyRequest, FastifyReply } from "fastify";
 
 export async function getUserHandler(
-  request: FastifyRequest<{ Params: { id: string } }>,
+  request: FastifyRequest,
   reply: FastifyReply
 ) {
-  const { id } = request.params;
+  reply.send(Object.keys(request));
+  const user = await request.mongo.db?.collection("vectors").findOne();
 
-  // Simulate fetching user
-  const user = { id, name: `User ${id}` };
+  if (!user) {
+    return reply.status(404).send({ error: "User not found" });
+  }
+
   return reply.send(user);
 }

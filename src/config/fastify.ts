@@ -1,6 +1,7 @@
-import Fastify from "fastify";
-import type { FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
+import type { FastifyInstance } from "fastify";
+import Fastify from "fastify";
+import mongoPlugin from "../plugins/mongodb";
 import { registerRoutes } from "../routes/index.route";
 
 export function createServer(): FastifyInstance {
@@ -13,8 +14,10 @@ export function createServer(): FastifyInstance {
     origin: "*", // You can restrict this in production
   });
 
+  app.register(mongoPlugin);
+
   // Register all routes
-  registerRoutes(app);
+  app.register(registerRoutes);
 
   return app;
 }
