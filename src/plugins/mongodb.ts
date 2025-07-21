@@ -17,8 +17,6 @@ export default fp(async function (app: FastifyInstance) {
 
   try {
     await db.command({ ping: 1 });
-    const ve = await db.collection("vectors").findOne();
-    console.log(ve);
     app.log.info(`MongoDB connected: ${db.databaseName}`);
   } catch (err) {
     app.log.error("MongoDB ping failed", err);
