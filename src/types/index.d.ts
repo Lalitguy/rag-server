@@ -1,7 +1,8 @@
-import type { FastifyMongoObject } from "@fastify/mongodb";
+import "fastify";
+import { FastifyMongoObject } from "@fastify/mongodb";
 
 declare module "fastify" {
-  interface FastifyRequest {
+  interface FastifyInstance {
     mongo: FastifyMongoObject;
   }
 }
