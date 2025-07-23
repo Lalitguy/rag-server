@@ -3,7 +3,7 @@ import { embedHandler } from "../controllers/embed.controller";
 import { logRequestMiddleware } from "../middlewares/logger.middleware";
 
 export function embedRoutes(app: FastifyInstance) {
-  app.post("/embed", {
+  app.post("/", {
     handler: embedHandler,
   });
 }
