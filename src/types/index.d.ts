@@ -6,3 +6,12 @@ declare module "fastify" {
     mongo: FastifyMongoObject;
   }
 }
+
+export interface VectorDocument {
+  _id?: string;
+  title: string;
+  description: string;
+  link?: string;
+  embedding: number[];
+  createdAt: Date;
+}
