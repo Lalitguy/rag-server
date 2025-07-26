@@ -10,8 +10,6 @@ export async function semanticSearch(
   const embedding = await embedText(query);
   const collection = getVectorCollection(app);
 
-  console.log("embedddingg------", embedding);
-
   if (!collection) throw new Error("MongoDB collection not found");
 
   const results = (await collection
