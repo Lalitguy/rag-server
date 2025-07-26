@@ -7,7 +7,6 @@ export async function embedHandler(
   request: FastifyRequest,
   reply: FastifyReply
 ) {
-  console.log(request.body);
   const { title, description, link } = request.body as {
     title: string;
     description: string;
