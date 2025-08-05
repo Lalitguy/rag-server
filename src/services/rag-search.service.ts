@@ -2,6 +2,7 @@
 import { Mistral } from "@mistralai/mistralai";
 import type { VectorDocument } from "../types";
 import { ENV } from "../config/env";
+import type { FastifyReply } from "fastify";
 
 const mistralClient = new Mistral({
   apiKey: ENV.MISTRAL_API_KEY,
@@ -10,8 +11,9 @@ const mistralClient = new Mistral({
 export async function ragSearch(
   query: string,
   contextDocs: VectorDocument[],
+  reply?: FastifyReply,
   model = "mistral-medium"
-): Promise<string> {
+) {
   const contextString = contextDocs
     .map((doc, index) => {
       return `Source ${index + 1}:
@@ -36,7 +38,7 @@ If a document includes a link and it appears relevant to the query, include the 
 Your response must be:
 - Written as a clear, well-structured paragraph in natural, human-readable language.
 - Professional in tone, concise, and informative.
-- Approximately 100 to 500 words in length. If the available context is too limited to generate a response of that length, you may respond in fewer words — but clearly indicate that the information provided is minimal due to limited context.
+- Approximately 60 to 300 words in length. If the available context is too limited to generate a response of that length, you may respond in fewer words — but clearly indicate that the information provided is minimal due to limited context.
 .  
   `.trim();
 
@@ -51,18 +53,37 @@ ${contextString}
   `.trim();
 
   try {
-    const response = await mistralClient.chat.complete({
-      model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-    });
+    if (reply) {
+      const stream = await mistralClient.chat.stream({
+        model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+      });
 
-    return (
-      response?.choices?.[0]?.message?.content?.toString() ||
-      "No response received."
-    );
+      for await (const event of stream) {
+        const content = event.data?.choices[0]?.delta.content;
+        if (!content) {
+          continue;
+        }
+        reply.raw.write(content);
+      }
+      reply.raw.end();
+    } else {
+      const response = await mistralClient.chat.complete({
+        model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+      });
+
+      return (
+        response?.choices?.[0]?.message?.content?.toString() ||
+        "No response received."
+      );
+    }
   } catch (err) {
     return "No response received.";
   }

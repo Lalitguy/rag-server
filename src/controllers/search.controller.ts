@@ -7,16 +7,24 @@ export async function searchHandler(
   request: FastifyRequest,
   reply: FastifyReply
 ) {
-  const { prompt } = request.body as {
+  const { prompt, stream } = request.body as {
     prompt: string;
+    stream?: boolean;
   };
 
   try {
     const searchResult = await semanticSearch(this, prompt);
 
-    const result = await ragSearch(prompt, searchResult || []);
-
-    return reply.send({ success: true, result: result });
+    if (stream) {
+      reply.raw.setHeader("Content-Type", "text/event-stream");
+      reply.raw.setHeader("Cache-Control", "no-cache");
+      reply.raw.setHeader("Connection", "keep-alive");
+      reply.raw.flushHeaders?.();
+      await ragSearch(prompt, searchResult || [], reply);
+    } else {
+      const result = await ragSearch(prompt, searchResult || []);
+      return reply.send({ success: true, data: result });
+    }
   } catch (err) {
     reply.status(500).send({ error: "Embedding failed" });
   }
