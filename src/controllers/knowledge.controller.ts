@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { getVectorCollection } from "../models/vector.model";
 import { ObjectId } from "@fastify/mongodb";
 import type { KnowledgeDoc } from "../types";
+import { embedText } from "../services/embedding.service";
 
 export async function allKnowledge(
   this: FastifyInstance,
@@ -48,28 +49,31 @@ export async function knowledgeUpdate(
   reply: FastifyReply
 ) {
   const { id } = request.params as { id: string };
-  const updates = request.body as Partial<KnowledgeDoc>;
+  const updates = request.body as KnowledgeDoc;
 
-  console.log(id, updates);
   try {
     const collection = getVectorCollection(this);
-    console.log(updates);
+
+    const { title, description, link } = updates;
+
+    const input = `${title}\n\n${description}${link ? `\n\n${link}` : ""}`;
+    const embedding = await embedText(input);
+
+    const doc = { ...updates, embedding };
+
     const result = await collection.updateOne(
       { _id: new ObjectId(id) },
-      { $set: updates }
+      { $set: doc }
     );
 
     if (result.matchedCount === 0) {
-      console.log("errrooooooooooooooore ----------------");
       return reply
         .status(404)
         .send({ success: false, message: "Document not found" });
     }
 
-    console.log("----------------------ist SUckkkesss");
     return reply.send({ success: true, updatedCount: result.modifiedCount });
   } catch (err) {
-    console.log(err);
     reply.status(500).send({ error: "Something went wrong" });
   }
 }
