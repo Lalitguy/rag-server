@@ -1,17 +1,14 @@
 import type { FastifyRequest, FastifyReply, FastifyInstance } from "fastify";
 import { embedText } from "../services/embedding.service";
 import { getVectorCollection } from "../models/vector.model";
+import type { KnowledgeDoc } from "../types";
 
 export async function embedHandler(
   this: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply
 ) {
-  const { title, description, link } = request.body as {
-    title: string;
-    description: string;
-    link?: string;
-  };
+  const { title, description, link } = request.body as KnowledgeDoc;
 
   const input = `${title}\n\n${description}${link ? `\n\n${link}` : ""}`;
 

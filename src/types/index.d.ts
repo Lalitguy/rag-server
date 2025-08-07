@@ -1,5 +1,5 @@
 import "fastify";
-import { FastifyMongoObject } from "@fastify/mongodb";
+import { FastifyMongoObject, ObjectId } from "@fastify/mongodb";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -8,10 +8,20 @@ declare module "fastify" {
 }
 
 export interface VectorDocument {
-  _id?: string;
+  _id?: ObjectId;
   title: string;
   description: string;
   link?: string;
   embedding: number[];
   createdAt: Date;
+}
+
+export interface KnowledgeDoc {
+  title: string;
+  description: string;
+  link?: string;
+}
+
+export interface KnowledgeDocWithId extends KnowledgeDoc {
+  _id: ObjectId;
 }
